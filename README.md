@@ -6,3 +6,5 @@ in the game and then get to his house. On the way you can also find diamonds, th
 with which we will check who is the first place in the leaderboards.
 
 This project contains a demo to the game, with 1 fully developed level.
+
+https://yetitmoves-mz.itch.io/sunnys-adventure
