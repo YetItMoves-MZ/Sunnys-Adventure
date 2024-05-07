@@ -176,10 +176,33 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+#if UNITY_ANDROID
+    private void HandleMovement()
+    {
+
+    }
+
+    public void OnLeftEnter()
+    {
+        
+    }
+    public void OnLeftExit()
+    {
+
+    }
+    public void OnRightEnter()
+    {
+
+    }
+    public void OnRightExit()
+    {
+
+    }
+#else
     private void HandleMovement()
     {
         float direction;
-        bool isBothKeyPressed = (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow)) && (Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow));
+        bool isBothKeyPressed = IsLeftPressed() && IsRightPressed();
         direction = !isBothKeyPressed ? Input.GetAxis("Horizontal") : 0f;
         HandleMovementAnimations();
         if (!recentlyKilledEnemy)
@@ -187,6 +210,16 @@ public class PlayerMovement : MonoBehaviour
         else
             recentlyKilledEnemy = false;
     }
+#endif
+    bool IsLeftPressed()
+    {
+        return Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
+    }
+    bool IsRightPressed()
+    {
+        return Input.GetKey(KeyCode.D) || Input.GetKey(KeyCode.RightArrow);
+    }
+
     private void HandleMovementAnimations()
     {
         float direction = Input.GetAxisRaw("Horizontal");

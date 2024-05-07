@@ -29,6 +29,11 @@ public class InGameUIEngine : MonoBehaviour
     Color cherryTextColorDoneSF;
     static Color cherryTextColorDone;
 
+    [SerializeField]
+    GameObject buttonsPrefab;
+    [SerializeField]
+    RectTransform buttonsPrefabLocation;
+
     static int _cherryAmount;
     public static int cherryAmount
     {
@@ -93,6 +98,16 @@ public class InGameUIEngine : MonoBehaviour
     public static bool needToCheckHighScore;
     private void Start()
     {
+#if UNITY_ANDROID
+        GameObject buttons = Instantiate(buttonsPrefab,buttonsPrefabLocation,buttonsPrefabLocation.position,buttonsPrefabLocation.rotation);
+        Button leftButton = buttons.transform.Getchild(0).GetComponent<Button>();
+        Button rightButton = buttons.transform.Getchild(1).GetComponent<Button>();
+        Button upButton = buttons.transform.Getchild(2).GetComponent<Button>();
+        Button downButton = buttons.transform.Getchild(3).GetComponent<Button>();
+        Button jumpButton = buttons.transform.Getchild(4).GetComponent<Button>();
+#endif
+
+
         needToCheckHighScore = false;
         canGameEnd = false;
         cherryText = cherryTextSF;
