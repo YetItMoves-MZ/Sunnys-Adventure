@@ -163,54 +163,44 @@ public class PlayerMovement : MonoBehaviour
     {
         if (!CanClimb)
             return;
-        float direction = Input.GetAxis("Vertical");
+#if !UNITY_ANDROID
+        CustomInput.SetAxis("Vertical", Input.GetAxis("Vertical"));
+#endif
+
+        float direction = CustomInput.GetAxis("Vertical");
         rb.velocity = new Vector2(rb.velocity.x, direction * speed / 2);
         HandleClimbAnimation();
     }
     private void HandleClimbAnimation()
     {
-        float direction = Input.GetAxisRaw("Vertical");
+
+        float direction = CustomInput.GetAxisRaw("Vertical");
         if (anim.GetBool("StartedClimbAnimation"))
         {
             anim.speed = direction != 0 ? 1f : 0f;
         }
     }
 
-#if UNITY_ANDROID
     private void HandleMovement()
     {
+        bool isBothKeyPressed;
+#if !UNITY_ANDROID
+        CustomInput.SetAxis("Horizontal", Input.GetAxis("Horizontal"));
+        isBothKeyPressed = IsLeftPressed() && IsRightPressed();
 
-    }
-
-    public void OnLeftEnter()
-    {
-        
-    }
-    public void OnLeftExit()
-    {
-
-    }
-    public void OnRightEnter()
-    {
-
-    }
-    public void OnRightExit()
-    {
-
-    }
 #else
-    private void HandleMovement()
-    {
+        isBothKeyPressed = false;
+#endif
+
         float direction;
-        bool isBothKeyPressed = IsLeftPressed() && IsRightPressed();
-        direction = !isBothKeyPressed ? Input.GetAxis("Horizontal") : 0f;
+        direction = !isBothKeyPressed ? CustomInput.GetAxis("Horizontal") : 0f;
         HandleMovementAnimations();
         if (!recentlyKilledEnemy)
             rb.velocity = new Vector2(direction * speed, rb.velocity.y);
         else
             recentlyKilledEnemy = false;
     }
-#endif
+
     bool IsLeftPressed()
     {
         return Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
@@ -222,7 +212,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleMovementAnimations()
     {
-        float direction = Input.GetAxisRaw("Horizontal");
+        float direction = CustomInput.GetAxisRaw("Horizontal");
         anim.SetBool("IsRunning", direction != 0);
         if (direction == 0)
             return;
@@ -235,14 +225,24 @@ public class PlayerMovement : MonoBehaviour
     {
         HandleJumpAnimations();
 
-        if (Input.GetKeyUp(KeyCode.Space))
+#if !UNITY_ANDROID
+
+        float jumpKeyAxis = Input.GetKeyDown(KeyCode.Space) ? 1 : Input.GetKeyUp(KeyCode.Space) ? -1 : Input.GetKey(KeyCode.Space) ? 0.5f : 0;
+        CustomInput.SetAxis("Jump", jumpKeyAxis);
+#endif
+
+        bool isJumpPressedUp = CustomInput.GetAxis("Jump") == 1;
+        bool isJumpPressedDown = CustomInput.GetAxis("Jump") == -1;
+        bool isJumpHeldDown = CustomInput.GetAxis("Jump") == 0.5;
+
+        if (isJumpPressedUp)
         {
             isFullJumpFinished = false;
             if (rb.velocity.y != 0f)
                 canJump = false;
         }
 
-        if (!canJump || !Input.GetKey(KeyCode.Space) || isFullJumpFinished)
+        if (!canJump || !isJumpHeldDown || isFullJumpFinished)
             return;
 
         if (currentJumpTime > maxJumpTime)
@@ -250,7 +250,7 @@ public class PlayerMovement : MonoBehaviour
             isFullJumpFinished = true;
             return;
         }
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (isJumpPressedDown)
         {
             SoundEffectAudioSource.clip = jumpSound;
             SoundEffectAudioSource.Play();

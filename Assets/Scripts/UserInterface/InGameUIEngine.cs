@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using Unity.VisualScripting;
+using UnityEngine.EventSystems;
 
 public class InGameUIEngine : MonoBehaviour
 {
@@ -30,9 +31,13 @@ public class InGameUIEngine : MonoBehaviour
     static Color cherryTextColorDone;
 
     [SerializeField]
-    GameObject buttonsPrefab;
+    GameObject buttonsLeftPrefab;
     [SerializeField]
-    RectTransform buttonsPrefabLocation;
+    GameObject buttonsRightPrefab;
+    [SerializeField]
+    RectTransform buttonsLeftPrefabLocation;
+    [SerializeField]
+    RectTransform buttonsRightPrefabLocation;
 
     static int _cherryAmount;
     public static int cherryAmount
@@ -96,15 +101,11 @@ public class InGameUIEngine : MonoBehaviour
 
     public static bool canGameEnd;
     public static bool needToCheckHighScore;
+    bool pointerJumpUpSaved = false;
     private void Start()
     {
 #if UNITY_ANDROID
-        GameObject buttons = Instantiate(buttonsPrefab,buttonsPrefabLocation,buttonsPrefabLocation.position,buttonsPrefabLocation.rotation);
-        Button leftButton = buttons.transform.Getchild(0).GetComponent<Button>();
-        Button rightButton = buttons.transform.Getchild(1).GetComponent<Button>();
-        Button upButton = buttons.transform.Getchild(2).GetComponent<Button>();
-        Button downButton = buttons.transform.Getchild(3).GetComponent<Button>();
-        Button jumpButton = buttons.transform.Getchild(4).GetComponent<Button>();
+        SetAndroidButtons();
 #endif
 
 
@@ -118,6 +119,48 @@ public class InGameUIEngine : MonoBehaviour
         audioSource = AudioSourceSF;
         audioClips = audioClipsSF;
         AtRoundStart();
+    }
+
+    void SetAndroidButtons()
+    {
+        GameObject leftButtons = Instantiate(buttonsLeftPrefab, buttonsLeftPrefabLocation.position, buttonsLeftPrefabLocation.rotation, buttonsLeftPrefabLocation);
+        EventTrigger leftButton = leftButtons.transform.GetChild(0).GetComponent<EventTrigger>();
+        EventTrigger rightButton = leftButtons.transform.GetChild(1).GetComponent<EventTrigger>();
+        EventTrigger upButton = leftButtons.transform.GetChild(2).GetComponent<EventTrigger>();
+        EventTrigger downButton = leftButtons.transform.GetChild(3).GetComponent<EventTrigger>();
+
+        GameObject rightButtons = Instantiate(buttonsRightPrefab, buttonsRightPrefabLocation.position, buttonsRightPrefabLocation.rotation, buttonsRightPrefabLocation);
+        EventTrigger jumpButton = rightButtons.transform.GetChild(0).GetComponent<EventTrigger>();
+
+
+        SetEventTriggerByAxis(leftButton, EventTriggerType.PointerDown, "Horizontal", -1);
+        SetEventTriggerByAxis(leftButton, EventTriggerType.PointerUp, "Horizontal", 0);
+
+        SetEventTriggerByAxis(rightButton, EventTriggerType.PointerDown, "Horizontal", 1);
+        SetEventTriggerByAxis(rightButton, EventTriggerType.PointerUp, "Horizontal", 0);
+
+        SetEventTriggerByAxis(upButton, EventTriggerType.PointerDown, "Vertical", 1);
+        SetEventTriggerByAxis(upButton, EventTriggerType.PointerUp, "Vertical", 0);
+
+        SetEventTriggerByAxis(downButton, EventTriggerType.PointerDown, "Vertical", -1);
+        SetEventTriggerByAxis(downButton, EventTriggerType.PointerUp, "Vertical", 0);
+
+        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerClick, "Jump", 1);
+        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerUp, "Jump", -1);
+        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerDown, "Jump", 0.5f);
+    }
+
+    void SetEventTriggerByAxis(EventTrigger eventTrigger, EventTriggerType type, string key, float value)
+    {
+        EventTrigger.Entry trigger = new EventTrigger.Entry();
+        trigger.eventID = type;
+        trigger.callback.AddListener((data) => { OnSetAxis(key, value); });
+        eventTrigger.triggers.Add(trigger);
+    }
+
+    void OnSetAxis(string key, float value)
+    {
+        CustomInput.SetAxis(key, value);
     }
 
     void AtRoundStart()

@@ -152,7 +152,7 @@ public class ScoreScreenUIEngine : MonoBehaviour
         GameObject newScore = Instantiate(scorePrefab, leaderboardsParentObject.transform);
 
         RectTransform transformComponent = newScore.GetComponent<RectTransform>();
-        transformComponent.Translate(0f, -50f * place, 0f);
+        transformComponent.Translate(0f, -100f * place, 0f);
 
         newScore.transform.GetChild(0).GetComponent<TMP_Text>().text = name;
         newScore.transform.GetChild(1).GetComponent<TMP_Text>().text = cherriesCollected.ToString();
