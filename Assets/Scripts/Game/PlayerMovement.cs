@@ -64,6 +64,7 @@ public class PlayerMovement : MonoBehaviour
     void Update()
     {
         HandleRageQuit();
+        HandlePlayerDeath();
         if (playerDied)
             return;
         HandleWhatIsBelowMe();
@@ -71,6 +72,16 @@ public class PlayerMovement : MonoBehaviour
         HandleJump();
         HandleClimb();
         HandleMovement();
+    }
+
+    private void HandlePlayerDeath()
+    {
+        if (!playerDied)
+            return;
+
+        CustomInput.SetAxis("Horizontal", 0);
+        CustomInput.SetAxis("Vertical", 0);
+        CustomInput.SetAxis("Jump", 0);
     }
 
     private void HandleRageQuit()

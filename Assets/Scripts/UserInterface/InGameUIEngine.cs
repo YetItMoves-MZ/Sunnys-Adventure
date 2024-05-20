@@ -5,6 +5,7 @@ using UnityEngine.UI;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine.EventSystems;
+using System.Linq;
 
 public class InGameUIEngine : MonoBehaviour
 {
@@ -101,7 +102,6 @@ public class InGameUIEngine : MonoBehaviour
 
     public static bool canGameEnd;
     public static bool needToCheckHighScore;
-    bool pointerJumpUpSaved = false;
     private void Start()
     {
 #if UNITY_ANDROID
@@ -121,6 +121,7 @@ public class InGameUIEngine : MonoBehaviour
         AtRoundStart();
     }
 
+
     void SetAndroidButtons()
     {
         GameObject leftButtons = Instantiate(buttonsLeftPrefab, buttonsLeftPrefabLocation.position, buttonsLeftPrefabLocation.rotation, buttonsLeftPrefabLocation);
@@ -133,33 +134,37 @@ public class InGameUIEngine : MonoBehaviour
         EventTrigger jumpButton = rightButtons.transform.GetChild(0).GetComponent<EventTrigger>();
 
 
-        SetEventTriggerByAxis(leftButton, EventTriggerType.PointerDown, "Horizontal", -1);
-        SetEventTriggerByAxis(leftButton, EventTriggerType.PointerUp, "Horizontal", 0);
+        SetEventTriggerByAxis(leftButton, EventTriggerType.PointerDown, "Horizontal -1");
+        SetEventTriggerByAxis(leftButton, EventTriggerType.PointerUp, "Horizontal 0");
 
-        SetEventTriggerByAxis(rightButton, EventTriggerType.PointerDown, "Horizontal", 1);
-        SetEventTriggerByAxis(rightButton, EventTriggerType.PointerUp, "Horizontal", 0);
+        SetEventTriggerByAxis(rightButton, EventTriggerType.PointerDown, "Horizontal 1");
+        SetEventTriggerByAxis(rightButton, EventTriggerType.PointerUp, "Horizontal 0");
 
-        SetEventTriggerByAxis(upButton, EventTriggerType.PointerDown, "Vertical", 1);
-        SetEventTriggerByAxis(upButton, EventTriggerType.PointerUp, "Vertical", 0);
+        SetEventTriggerByAxis(upButton, EventTriggerType.PointerDown, "Vertical 1");
+        SetEventTriggerByAxis(upButton, EventTriggerType.PointerUp, "Vertical 0");
 
-        SetEventTriggerByAxis(downButton, EventTriggerType.PointerDown, "Vertical", -1);
-        SetEventTriggerByAxis(downButton, EventTriggerType.PointerUp, "Vertical", 0);
+        SetEventTriggerByAxis(downButton, EventTriggerType.PointerDown, "Vertical -1");
+        SetEventTriggerByAxis(downButton, EventTriggerType.PointerUp, "Vertical 0");
 
-        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerClick, "Jump", 1);
-        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerUp, "Jump", -1);
-        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerDown, "Jump", 0.5f);
+        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerClick, "Jump 1");
+        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerUp, "Jump -1");
+        SetEventTriggerByAxis(jumpButton, EventTriggerType.PointerDown, "Jump 0.5");
     }
 
-    void SetEventTriggerByAxis(EventTrigger eventTrigger, EventTriggerType type, string key, float value)
+    void SetEventTriggerByAxis(EventTrigger eventTrigger, EventTriggerType type, string input)
     {
+        if (eventTrigger.transform.childCount > 0)
+            SetEventTriggerByAxis(eventTrigger.transform.GetChild(0).GetComponent<EventTrigger>(), type, input);
         EventTrigger.Entry trigger = new EventTrigger.Entry();
         trigger.eventID = type;
-        trigger.callback.AddListener((data) => { OnSetAxis(key, value); });
+        trigger.callback.AddListener((data) => { OnSetAxis(input); });
         eventTrigger.triggers.Add(trigger);
     }
 
-    void OnSetAxis(string key, float value)
+    public void OnSetAxis(string input)
     {
+        string key = input.Split(" ")[0];
+        float value = float.Parse(input.Split(" ")[1]);
         CustomInput.SetAxis(key, value);
     }
 
